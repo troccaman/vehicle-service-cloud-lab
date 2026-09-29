@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Service Report</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, sans-serif;
+      background: #0b1220;
+      color: #e8eef8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 820px; margin: auto; padding: 40px 24px; }
+    a { color: #93c5fd; }
+    h1 { font-size: 32px; margin-bottom: 8px; }
+    p { color: #a7b6cc; line-height: 1.6; }
+    form {
+      margin-top: 28px; padding: 28px;
+      background: #131e30; border: 1px solid #26354c;
+      border-radius: 16px;
+    }
+    .grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    label { display: block; font-size: 14px; font-weight: 600; }
+    input, textarea {
+      width: 100%; margin-top: 8px; padding: 12px;
+      border: 1px solid #42526b; border-radius: 8px;
+      background: #0b1220; color: #e8eef8;
+      font: inherit;
+    }
+    input:focus, textarea:focus {
+      outline: 2px solid #60a5fa; outline-offset: 2px;
+    }
+    textarea { min-height: 150px; resize: vertical; }
+    .wide { grid-column: 1 / -1; }
+    .hint { font-size: 13px; margin: 8px 0 0; }
+    button {
+      margin-top: 24px; padding: 13px 20px;
+      background: #2563eb; color: white; border: 0;
+      border-radius: 9px; font: inherit; cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .error {
+      background: #45212a; border: 1px solid #a44759;
+      border-radius: 10px; padding: 16px;
+    }
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      form { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <a href="/">← Back to reports</a>
+  <h1>New service report</h1>
+  <p>Record vehicle details and completed service work.</p>
+
+  {% if error %}
+    <div class="error" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/reports/new">
+    <input type="hidden" name="form_token" value="{{ form_token }}">
+
+    <div class="grid">
+      <label>
+        Registration number
+        <input name="registration_number" required maxlength="80"
+               placeholder="ABC123"
+               value="{{ values.get('registration_number', '') }}">
+      </label>
+
+      <label>
+        Service date
+        <input type="date" name="service_date" required
+               value="{{ values.get('service_date', today) }}">
+      </label>
+
+      <label>
+        Vehicle make
+        <input name="vehicle_make" required maxlength="80"
+               placeholder="Volvo"
+               value="{{ values.get('vehicle_make', '') }}">
+      </label>
+
+      <label>
+        Vehicle model
+        <input name="vehicle_model" required maxlength="80"
+               placeholder="V60"
+               value="{{ values.get('vehicle_model', '') }}">
+      </label>
+
+      <label class="wide">
+        Mileage (km)
+        <input type="number" name="odometer_km"
+               min="0" max="10000000" step="1" required
+               placeholder="150000"
+               value="{{ values.get('odometer_km', '') }}">
+      </label>
+
+      <label class="wide">
+        Work performed
+        <textarea name="work_performed" required maxlength="5000"
+                  placeholder="Engine oil replacement&#10;Oil filter replacement">{{ values.get('work_performed', '') }}</textarea>
+        <p class="hint">Enter one task per line.</p>
+      </label>
+    </div>
+
+    <button type="submit">Submit service report</button>
+    <p class="hint">
+      Your report will appear in the list after processing.
+    </p>
+  </form>
+</main>
+<script>
+  document.querySelector("form").addEventListener("submit", function () {
+    const button = this.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Submitting…";
+  });
+</script>
+</body>
+</html>

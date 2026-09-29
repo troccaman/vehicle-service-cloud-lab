@@ -1,0 +1,23 @@
+# Terraform downloaded providers
+**/.terraform/*
+
+# Local Terraform state and saved plans
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Local credentials
+.env
+.env.*
+
+# Python generated files
+__pycache__/
+*.py[cod]
+.venv/
+
+# Downloaded test copies
+/downloads/
+
+/build/

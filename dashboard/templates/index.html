@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="15">
+  <title>Vehicle Service Dashboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, sans-serif;
+      background: #0b1220;
+      color: #e8eef8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 1200px; margin: auto; padding: 48px 24px; }
+    header {
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 24px; margin-bottom: 32px;
+    }
+    .label {
+      color: #60a5fa; font-size: 12px;
+      letter-spacing: 2px; font-weight: 700;
+    }
+    h1 { margin: 10px 0; font-size: clamp(26px, 4vw, 38px); }
+    p { color: #a7b6cc; line-height: 1.6; }
+    .button {
+      color: #fff; background: #2563eb; padding: 12px 18px;
+      border-radius: 10px; text-decoration: none; white-space: nowrap;
+    }
+    .button:hover { background: #1d4ed8; }
+    .cards {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 18px; margin-bottom: 28px;
+    }
+    .card, .panel {
+      background: #131e30; border: 1px solid #26354c;
+      border-radius: 16px;
+    }
+    .card { padding: 24px; }
+    .card span { color: #a7b6cc; font-size: 14px; }
+    .card strong { display: block; font-size: 38px; margin-top: 10px; }
+    .panel { overflow: hidden; }
+    .panel-heading { padding: 22px 24px; border-bottom: 1px solid #26354c; }
+    h2 { margin: 0; font-size: 19px; }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th {
+      color: #a7b6cc; font-size: 12px;
+      text-transform: uppercase; letter-spacing: .6px;
+    }
+    th, td { padding: 18px 24px; border-bottom: 1px solid #26354c; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #19273c; }
+    .badge {
+      display: inline-block; padding: 5px 10px; border-radius: 20px;
+      background: #27364d; color: #d9e4f5; font-size: 12px;
+    }
+    .processed { background: #123d34; color: #6ee7b7; }
+    .muted { color: #a7b6cc; font-size: 13px; }
+    .empty { padding: 32px 24px; }
+    .error {
+      background: #45212a; border: 1px solid #a44759;
+      border-radius: 12px; padding: 18px; margin-bottom: 24px;
+    }
+    details { margin-top: 8px; }
+    summary { cursor: pointer; color: #93c5fd; font-size: 12px; }
+    code { display: block; margin-top: 8px; overflow-wrap: anywhere; }
+    footer { margin-top: 22px; color: #8ea0ba; font-size: 13px; }
+    @media (max-width: 650px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .cards { grid-template-columns: 1fr; }
+      main { padding: 28px 16px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <div class="label">PICLOUD / SERVICE REPORTS</div>
+      <h1>Vehicle Service Dashboard</h1>
+      <p>Your vehicle reports, collected in one place.</p>
+    </div>
+    <a class="button" href="/reports/new">+ New service report</a>
+  </header>
+
+  {% if error %}
+    <div class="error" role="alert">{{ error }}</div>
+  {% endif %}
+
+
+  {% if request.args.get('submitted') %}
+    <p role="status">
+      Report submitted:
+      <strong>{{ request.args.get('submitted') }}</strong>.
+      Processing runs in the background. The list refreshes automatically.
+    </p>
+  {% endif %}
+
+  <section class="cards" aria-label="Report summary">
+    <div class="card">
+      <span>Total reports</span>
+      <strong>{{ '—' if error else reports|length }}</strong>
+    </div>
+    <div class="card">
+      <span>Processed reports</span>
+      <strong>{{ '—' if error else processed_count }}</strong>
+    </div>
+    <div class="card">
+      <span>Vehicles</span>
+      <strong>{{ '—' if error else vehicle_count }}</strong>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading"><h2>Service reports</h2></div>
+    {% if reports %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Report</th>
+            <th>Registration</th>
+            <th>Vehicle</th>
+            <th>Status</th>
+            <th>Processed at (UTC)</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for report in reports %}
+          <tr>
+            <td>
+              <strong>{{ report.get('report_id', '—') }}</strong>
+              <details>
+                <summary>Source file</summary>
+                <code>s3://{{ report.get('s3_bucket', '') }}/{{ report.get('s3_key', '') }}</code>
+              </details>
+            </td>
+            <td>{{ report.get('registration_number', '—') }}</td>
+            <td>{{ report.get('vehicle_make', '') }} {{ report.get('vehicle_model', '') }}</td>
+            <td>
+              <span class="badge {% if report.get('status') == 'processed' %}processed{% endif %}">
+                {{ report.get('status', 'unknown') }}
+              </span>
+            </td>
+            <td class="muted">{{ report.get('processed_at', '—') }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% elif not error %}
+      <p class="empty">No reports yet. Process a service report to see it here.</p>
+    {% else %}
+      <p class="empty">Reports are temporarily unavailable.</p>
+    {% endif %}
+  </section>
+
+  <footer>
+    Automatically refreshes every 15 seconds ·
+    {{ 'Last attempt' if error else 'Last loaded' }}: {{ checked_at }}
+  </footer>
+</main>
+</body>
+</html>
