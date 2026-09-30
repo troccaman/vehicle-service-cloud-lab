@@ -22,6 +22,11 @@ jobs:
         with:
           terraform_version: "1.13.3"
 
+      - name: Build Lambda package
+        run: |
+          mkdir -p build
+          zip -j build/process-service-report.zip functions/process_service_report.py
+
       - name: Check Terraform formatting
         working-directory: terraform
         run: terraform fmt -check -recursive
