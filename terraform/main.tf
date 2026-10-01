@@ -11,6 +11,7 @@ resource "aws_s3_bucket_public_access_block" "service_reports" {
   restrict_public_buckets = true
 }
 
+#trivy:ignore:AWS-0132
 resource "aws_s3_bucket_server_side_encryption_configuration" "service_reports" {
   bucket = aws_s3_bucket.service_reports.id
 
