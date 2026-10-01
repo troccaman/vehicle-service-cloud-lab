@@ -38,3 +38,11 @@ jobs:
       - name: Validate Terraform
         working-directory: terraform
         run: terraform validate
+
+      - name: Scan Terraform for security issues
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: terraform
+          severity: HIGH,CRITICAL
+          exit-code: 1
