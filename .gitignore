@@ -21,3 +21,9 @@ __pycache__/
 /downloads/
 
 /build/
+
+# Local backup files
+*.bak
+
+# Local service reports
+/reports/
